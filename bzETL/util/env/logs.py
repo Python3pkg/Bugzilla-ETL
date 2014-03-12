@@ -177,6 +177,7 @@ class Log(object):
         if not settings:
             return
 
+        cls.settings = settings
         cls.trace = cls.trace | nvl(settings.trace, False)
         if cls.trace:
             from ..thread.threads import Thread
@@ -191,38 +192,21 @@ class Log(object):
             Log.add_log(Log.new_instance(log))
 
         if settings.profile:
-            import cProfile
+            if isinstance(settings.profile, bool):
+                settings.profile = {"enabled":True, "filename":"profile.tab"}
 
-            cls.profiler = cProfile.Profile()
-            cls.profiler.enable()
+            if settings.profile.enabled:
+                import cProfile
+
+                cls.profiler = cProfile.Profile()
+                cls.profiler.enable()
 
 
     @classmethod
     def stop(cls):
         if cls.profiler:
             cls.profiler.disable()
-
-            from ..cnv import CNV
-            from .files import File
-            import pstats
-
-            p = pstats.Stats(cls.profiler)
-            stats = [{
-                "num_calls":d[1],
-                "self_time":d[2],
-                "total_time":d[3],
-                "self_time_per_call":d[2]/d[1],
-                "total_time_per_call":d[3]/d[1],
-                "file":(f[0] if f[0] != "~" else "").replace("\\", "/"),
-                "line":f[1],
-                "method":f[2].lstrip("<").rstrip(">")
-            }
-                for f, d, in p.stats.iteritems()
-            ]
-            CNV.list2tab(stats)
-            filename = "profile "+CNV.datetime2string(datetime.now(), "%Y%m%d-%H%M%S")+".tab"
-            File(filename).write(CNV.list2tab(stats))
-
+            write_profile(cls.settings.profile, cls.profiler)
         cls.main_log.stop()
 
 
@@ -448,6 +432,35 @@ class Log_usingMulti(BaseLog):
                 pass
 
 
+def write_profile(profile_settings, profiler):
+    from ..cnv import CNV
+    from .files import File
+    import pstats
+
+    p = pstats.Stats(profiler)
+    stats = [{
+            "num_calls": d[1],
+            "self_time": d[2],
+            "total_time": d[3],
+            "self_time_per_call": d[2] / d[1],
+            "total_time_per_call": d[3] / d[1],
+            "file": (f[0] if f[0] != "~" else "").replace("\\", "/"),
+            "line": f[1],
+            "method": f[2].lstrip("<").rstrip(">")
+        }
+        for f, d, in p.stats.iteritems()
+    ]
+    stats_file = File(profile_settings.filename, suffix=CNV.datetime2string(datetime.now(), "_%Y%m%d_%H%M%S"))
+    stats_file.write(CNV.list2tab(stats))
+
+
+
+
+
 if not Log.main_log:
     from log_usingStream import Log_usingStream
     Log.main_log = Log_usingStream("sys.stdout")
+
+
+
+

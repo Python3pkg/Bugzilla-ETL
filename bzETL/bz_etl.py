@@ -26,7 +26,7 @@ from bzETL.util.sql.db import DB
 
 from bzETL import parse_bug_history, transform_bugzilla, extract_bugzilla, alias_analysis
 from bzETL.util.times.timer import Timer
-from extract_bugzilla import get_private_bugs, get_recent_private_attachments, get_recent_private_comments, get_comments, get_comments_by_id, get_recent_private_bugs, get_current_time, get_bugs, get_dependencies, get_flags, get_new_activities, get_bug_see_also, get_attachments, get_tracking_flags, get_keywords, get_cc, get_bug_groups, get_duplicates
+from extract_bugzilla import get_private_bugs_for_delete, get_recent_private_attachments, get_recent_private_comments, get_comments, get_comments_by_id, get_recent_private_bugs, get_current_time, get_bugs, get_dependencies, get_flags, get_new_activities, get_bug_see_also, get_attachments, get_tracking_flags, get_keywords, get_cc, get_bug_groups, get_duplicates
 from parse_bug_history import BugHistoryParser
 
 
@@ -186,7 +186,7 @@ def incremental_etl(settings, param, db, es, es_comments, output_queue):
     ####################################################################
 
     #REMOVE PRIVATE BUGS
-    private_bugs = get_private_bugs(db, param)
+    private_bugs = get_private_bugs_for_delete(db, param)
     for g, delete_bugs in Q.groupby(private_bugs, size=1000):
         still_existing = get_bug_ids(es, {"terms": {"bug_id": delete_bugs}})
         if still_existing:
@@ -383,9 +383,11 @@ def main(settings, es=None, es_comments=None):
                 param.allow_private_bugs = settings.param.allow_private_bugs
 
                 if last_run_time > 0:
-                    incremental_etl(settings, param, db, es, es_comments, output_queue)
+                    with Timer("run incremental etl"):
+                        incremental_etl(settings, param, db, es, es_comments, output_queue)
                 else:
-                    full_etl(resume_from_last_run, settings, param, db, es, es_comments, output_queue)
+                    with Timer("run full etl"):
+                        full_etl(resume_from_last_run, settings, param, db, es, es_comments, output_queue)
 
                 output_queue.add(Thread.STOP)
 
