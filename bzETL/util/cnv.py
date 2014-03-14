@@ -32,7 +32,7 @@ class CNV:
         try:
             json = json_encoder.encode(obj, pretty=pretty)
             if json == None:
-                Log.error("None is not valid JOSN: "+repr(obj))
+                Log.error("None is not valid JSON: "+str(obj)+ " of type "+str(type(obj)))
             return json
         except Exception, e:
             Log.error("Can not encode into JSON: {{value}}", {"value": repr(obj)}, e)
