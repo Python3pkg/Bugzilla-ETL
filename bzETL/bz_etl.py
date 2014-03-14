@@ -157,8 +157,8 @@ def setup_es(settings, db, es, es_comments):
             # BUG VERSIONS
             schema = File(settings.es.schema_file).read()
             if transform_bugzilla.USE_ATTACHMENTS_DOT:
-                schema = schema.replace("attachments_", "attachments.")
-            schema=CNV.JSON2object(schema)
+                schema = schema.replace("attachments_", "attachments\\.")
+            schema=CNV.JSON2object(schema, paths=True)
             schema.settings=jsons.expand_dot(schema.settings)
             if not settings.es.alias:
                 settings.es.alias = settings.es.index
@@ -167,7 +167,7 @@ def setup_es(settings, db, es, es_comments):
 
             # BUG COMMENTS
             comment_schema = File(settings.es_comments.schema_file).read()
-            comment_schema=CNV.JSON2object(comment_schema)
+            comment_schema=CNV.JSON2object(comment_schema, paths=True)
             comment_schema.settings=jsons.expand_dot(comment_schema.settings)
             if not settings.es_comments.alias:
                 settings.es_comments.alias = settings.es_comments.index

@@ -355,6 +355,8 @@ def pretty_json(value):
             return "[\n" + ",\n".join([indent(pretty_json(v)) for v in value]) + "\n]"
         elif hasattr(value, '__json__'):
             j = value.__json__()
+            if j == None:
+                return "null"  # TODO: FIND OUT WHAT CAUSES THIS
             return pretty_json(json_decoder.decode(j))
         elif hasattr(value, '__iter__'):
             return pretty_json(list(value))
