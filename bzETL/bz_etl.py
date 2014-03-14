@@ -237,7 +237,7 @@ def incremental_etl(settings, param, db, es, es_comments, output_queue):
     es_comments.extend({"id": c.comment_id, "value": c} for c in changed_comments)
 
     #GET LIST OF CHANGED BUGS
-    with Timer("time to get bug list"):
+    with Timer("time to get changed bug list"):
         if param.allow_private_bugs:
             bug_list = Q.select(db.query("""
                 SELECT
@@ -294,22 +294,14 @@ def full_etl(resume_from_last_run, settings, param, db, es, es_comments, output_
 
         #TWO WORKERS IS MORE THAN ENOUGH FOR A SINGLE THREAD
         # with Multithread([run_both_etl, run_both_etl]) as workers:
-        for b in range(start, end, settings.param.increment):
-            if settings.args.quick and b < end - settings.param.increment and b != 0:
+        for min, max in Q.intervals(start, end, settings.param.increment):
+            if settings.args.quick and min < end - settings.param.increment and min != 0:
                 #--quick ONLY DOES FIRST AND LAST BLOCKS
                 continue
 
-            # WITHOUT gc.collect() PYPY MEMORY USAGE GROWS UNTIL 2gig LIMIT IS HIT AND CRASH
-            # WITH THIS LINE IT SEEMS TO TOP OUT AT 1.2gig
-            #UPDATE 2013 OCT 30: SOMETIMES THERE IS A MEMORY EXPLOSION, SOMETIMES NOT
-            #UPDATE 2013 NOV 25: THE MEMORY PROBLEM MAY BE THAT THE DATA SINK (ES) IS NOT FAST ENOUGH
-            #                    TO ACCEPT THE RECORDS GENERATED.  (MAYBE INDEXING IS ON?)
-            #                    MITIGATED WITH Thread(max=) TO SLOW DOWN DATA SOURCE
-            gc.collect()
-            (min, max) = (b, b + settings.param.increment)
             try:
                 #GET LIST OF CHANGED BUGS
-                with Timer("time to get bug list"):
+                with Timer("time to get {{min}}..{{max}} bug list", {"min":min, "max":max}):
                     if param.allow_private_bugs:
                         bug_list = Q.select(db.query("""
                             SELECT
