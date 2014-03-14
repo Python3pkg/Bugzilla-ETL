@@ -30,7 +30,10 @@ class CNV:
     @staticmethod
     def object2JSON(obj, pretty=False):
         try:
-            return json_encoder.encode(obj, pretty=pretty)
+            json = json_encoder.encode(obj, pretty=pretty)
+            if json == None:
+                Log.error("None is not valid JOSN: "+repr(obj))
+            return json
         except Exception, e:
             Log.error("Can not encode into JSON: {{value}}", {"value": repr(obj)}, e)
 
