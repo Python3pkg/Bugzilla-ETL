@@ -9,13 +9,13 @@ from bzETL.util.queries import Q
 from bzETL.util.struct import Struct, wrap, unwrap
 
 
-def make_test_instance(name, settings, schema):
+def make_test_instance(name, settings):
     if settings.filename:
         File(settings.filename).delete()
-    return open_test_instance(name, settings, schema)
+    return open_test_instance(name, settings)
 
 
-def open_test_instance(name, settings, schema):
+def open_test_instance(name, settings):
     if settings.filename:
         Log.note("Using {{filename}} as {{type}}", {
             "filename": settings.filename,
@@ -29,6 +29,8 @@ def open_test_instance(name, settings, schema):
         })
 
         ElasticSearch.delete_index(settings)
+
+        schema = CNV.JSON2object(File(settings.schema_file).read(), flexible=True, paths=True)
         es = ElasticSearch.create_index(settings, schema, limit_replicas=True)
         return es
 

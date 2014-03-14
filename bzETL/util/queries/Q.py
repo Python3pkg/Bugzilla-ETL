@@ -326,13 +326,13 @@ def sort(data, fieldnames=None):
                 def comparer(left, right):
                     return cmp(nvl(left, Struct())[fieldnames], nvl(right, Struct())[fieldnames])
 
-                return wrap(sorted(data, cmp=comparer))
+                return StructList([unwrap(d) for d in sorted(data, cmp=comparer)])
             else:
                 #EXPECTING {"field":f, "sort":i} FORMAT
                 def comparer(left, right):
                     return fieldnames["sort"] * cmp(nvl(left, Struct())[fieldnames["field"]], nvl(right, Struct())[fieldnames["field"]])
 
-                return wrap(sorted(data, cmp=comparer))
+                return StructList([unwrap(d) for d in sorted(data, cmp=comparer)])
 
         formal = query._normalize_sort(fieldnames)
 
@@ -349,9 +349,9 @@ def sort(data, fieldnames=None):
             return 0
 
         if isinstance(data, list):
-            output = wrap(sorted(data, cmp=comparer))
+            output = StructList([unwrap(d) for d in sorted(data, cmp=comparer)])
         elif hasattr(data, "__iter__"):
-            output = wrap(sorted(list(data), cmp=comparer))
+            output = StructList([unwrap(d) for d in sorted(list(data), cmp=comparer)])
         else:
             Log.error("Do not know how to handle")
 

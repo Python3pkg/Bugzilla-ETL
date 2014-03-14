@@ -205,7 +205,7 @@ class ElasticSearch(object):
         if self.debug:
             Log.note("Delete bugs:\n{{query}}", {"query": query})
 
-        ElasticSearch.delete(
+        self.delete(
             self.path + "/_query",
             data=CNV.object2JSON(query)
         )

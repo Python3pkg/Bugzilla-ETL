@@ -554,32 +554,39 @@ def wrap(v):
     elif type is StructList:
         return v
     elif type is list:
-        for vv in v:
+        for sv in v:
             # IN PRACTICE WE DO NOT EXPECT TO GO THROUGH THIS LIST, IF ANY ARE WRAPPED, THE FIRST IS PROBABLY WRAPPED
-            if vv is not unwrap(vv):
+            # WARNING!  THIS IS VERY SLOW
+            if sv is not unwrap(sv):
                 #MUST KEEP THE LIST
-                temp = [unwrap(vv) for vv in v]
+                temp = [unwrap(sv) for sv in v]
                 del v[:]
                 v.extend(temp)
+                # from .env.logs import Log
+
+                # Log.warning("Please unwrap members of list before wrapping list.  Fixed for now.")
                 return StructList(v)
         return StructList(v)
     elif type is GeneratorType:
         return (wrap(vv) for vv in v)
     elif v is None:
         return Null
-
-    return v
+    else:
+        return v
 
 
 def unwrap(v):
     type = v.__class__
     if type is Struct:
         return _get(v, "__dict__")
-    if type is StructList:
+    elif type is StructList:
         return v.list
-    if type is NullType:
+    elif type is NullType:
         return None
-    return v
+    elif type is GeneratorType:
+        return (unwrap(vv) for vv in v)
+    else:
+        return v
 
 
 def inverse(d):
