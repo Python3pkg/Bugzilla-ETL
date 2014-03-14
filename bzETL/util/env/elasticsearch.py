@@ -218,40 +218,46 @@ class ElasticSearch(object):
             OPTIONAL "id" PROPERTY IS ALSO ACCEPTED
         """
         lines = []
-        for r in records:
-            id = r.get("id", None)
-            if "json" in r:
-                json = r["json"]
-            elif "value" in r:
-                json = CNV.object2JSON(r["value"])
-            else:
-                Log.error("Expecting every record given to have \"value\" or \"json\" property")
+        try:
+            for r in records:
+                id = r.get("id", None)
+                if "json" in r:
+                    json = r["json"]
+                elif "value" in r:
+                    json = CNV.object2JSON(r["value"])
+                else:
+                    Log.error("Expecting every record given to have \"value\" or \"json\" property")
 
-            if id == None:
-                id = Random.hex(40)
+                if id == None:
+                    id = Random.hex(40)
 
-            lines.append('{"index":{"_id": ' + CNV.object2JSON(id) + '}}')
-            lines.append(json)
+                lines.append('{"index":{"_id": ' + CNV.object2JSON(id) + '}}')
+                lines.append(json)
 
-        if not lines:
-            return
-        response = self.post(
-            self.path + "/_bulk",
-            data=("\n".join(lines) + "\n").encode("utf8"),
-            headers={"Content-Type": "text"},
-            timeout=self.settings.timeout
-        )
-        items = response["items"]
+            if not lines:
+                return
+            response = self.post(
+                self.path + "/_bulk",
+                data=("\n".join(lines) + "\n").encode("utf8"),
+                headers={"Content-Type": "text"},
+                timeout=self.settings.timeout
+            )
+            items = response["items"]
 
-        for i, item in enumerate(items):
-            if not item.index.ok:
-                Log.error("{{error}} while loading line:\n{{line}}", {
-                    "error": item.index.error,
-                    "line": lines[i * 2 + 1]
-                })
+            for i, item in enumerate(items):
+                if not item.index.ok:
+                    Log.error("{{error}} while loading line:\n{{line}}", {
+                        "error": item.index.error,
+                        "line": lines[i * 2 + 1]
+                    })
 
-        if self.debug:
-            Log.note("{{num}} items added", {"num": len(lines) / 2})
+            if self.debug:
+                Log.note("{{num}} items added", {"num": len(lines) / 2})
+        except Exception, e:
+            if e.message.startswith("sequence item "):
+                Log.error("problem with {{data}}", {"data": repr(lines[int(e.message[14, 16].strip())])}, e)
+            Log.error("problem", e)
+
 
     # RECORDS MUST HAVE id AND json AS A STRING OR
     # HAVE id AND value AS AN OBJECT
