@@ -255,7 +255,7 @@ class ElasticSearch(object):
                 Log.note("{{num}} items added", {"num": len(lines) / 2})
         except Exception, e:
             if e.message.startswith("sequence item "):
-                Log.error("problem with {{data}}", {"data": repr(lines[int(e.message[14, 16].strip())])}, e)
+                Log.error("problem with {{data}}", {"data": repr(lines[int(e.message[14:16].strip())])}, e)
             Log.error("problem", e)
 
 
