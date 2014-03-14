@@ -15,6 +15,7 @@ import time
 import requests
 
 from .. import struct
+from bzETL.util.maths.randoms import Random
 from ..thread.threads import ThreadedQueue
 from ..maths import Math
 from ..cnv import CNV
@@ -193,15 +194,10 @@ class ElasticSearch(object):
     def delete_record(self, filter):
         query = {"query": filter}
 
-        if isinstance(query, dict):
-            ElasticSearch.delete(
-                self.path + "/_query",
-                data=CNV.object2JSON(query)
-            )
-        else:
-            ElasticSearch.delete(
-                self.path + "/" + query
-            )
+        ElasticSearch.delete(
+            self.path + "/_query",
+            data=CNV.object2JSON(query)
+        )
 
     def extend(self, records):
         """
@@ -221,7 +217,7 @@ class ElasticSearch(object):
                 Log.error("Expecting every record given to have \"value\" or \"json\" property")
 
             if id == None:
-                id = sha.new(json.encode("utf8")).hexdigest()
+                id = Random.hex(40)
 
             lines.append('{"index":{"_id":' + CNV.object2JSON(id) + '}}')
             lines.append(json)

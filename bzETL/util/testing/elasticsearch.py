@@ -9,13 +9,13 @@ from bzETL.util.queries import Q
 from bzETL.util.struct import Struct, wrap, unwrap
 
 
-def make_test_instance(name, settings):
+def make_test_instance(name, settings, schema):
     if settings.filename:
         File(settings.filename).delete()
-    return open_test_instance(name, settings)
+    return open_test_instance(name, settings, schema)
 
 
-def open_test_instance(name, settings):
+def open_test_instance(name, settings, schema):
     if settings.filename:
         Log.note("Using {{filename}} as {{type}}", {
             "filename": settings.filename,
@@ -27,7 +27,10 @@ def open_test_instance(name, settings):
             "host": settings.host,
             "type": name
         })
-        return ElasticSearch(settings)
+
+        ElasticSearch.delete_index(settings)
+        es = ElasticSearch.create_index(settings, schema, limit_replicas=True)
+        return es
 
 
 

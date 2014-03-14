@@ -41,7 +41,6 @@ class TestETL(unittest.TestCase):
         self.settings = startup.read_settings(filename="test_settings.json")
         Log.start(self.settings.debug)
 
-
     def tearDown(self):
         #CLOSE THE CACHED DB CONNECTIONS
         bz_etl.close_db_connections()
@@ -212,8 +211,16 @@ class TestETL(unittest.TestCase):
 
         database.make_test_instance(self.settings.bugzilla)
 
-        es = elasticsearch.make_test_instance("candidate", self.settings.test_bugs)
-        es_c = elasticsearch.make_test_instance("candidate_comments", self.settings.test_comments)
+        es = elasticsearch.make_test_instance(
+            "candidate",
+            self.settings.test_bugs,
+            CNV.JSON2object(File(self.settings.test_bugs.schema_file).read(), flexible=True, paths=True)
+        )
+        es_c = elasticsearch.make_test_instance(
+            "candidate_comments",
+            self.settings.test_comments,
+            CNV.JSON2object(File(self.settings.test_bugs.schema_file).read(), flexible=True, paths=True)
+        )
         bz_etl.main(self.settings, es, es_c)
 
         #MARK SOME STUFF PRIVATE
@@ -531,19 +538,11 @@ class TestETL(unittest.TestCase):
                 Log.error("Expecting only one active bug_version record")
 
 
-
-
-
-
-
-
-
-
-
 def verify_no_private_bugs(es, private_bugs):
     #VERIFY BUGS ARE NOT IN OUTPUT
     for b in private_bugs:
         versions = compare_es.get_all_bug_versions(es, b)
+
         if versions:
             Log.error("Expecting no version for private bug {{bug_id}}", {
                 "bug_id": b

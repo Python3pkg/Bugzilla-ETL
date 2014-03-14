@@ -14,6 +14,7 @@ from datetime import datetime
 import sys
 
 from .. import struct
+from ..jsons import json_encoder
 from ..thread import threads
 from ..struct import listwrap, nvl, Struct, wrap
 from ..strings import indent, expand_template
@@ -34,7 +35,7 @@ class Log(object):
     main_log = None
     logging_multi = None
     profiler = None
-
+    error_mode = False  # prevent error loops
 
     @classmethod
     def new_instance(cls, settings):
@@ -110,8 +111,17 @@ class Log(object):
         if cause and not isinstance(cause, Except):
             cause = Except(WARNING, unicode(cause), trace=extract_tb(0))
 
-        e = Except(WARNING, template, params, cause, extract_stack(1))
-        Log.note(unicode(e))
+        trace = extract_stack(1)
+        e = Except(WARNING, template, params, cause, trace)
+        Log.note(unicode(e), {
+            "warning": {
+                "template": template,
+                "params": params,
+                "cause": cause,
+                "trace": trace
+            }
+        })
+
 
     @classmethod
     def error(
@@ -167,7 +177,25 @@ class Log(object):
 
         trace = extract_stack(1 + offset)
         e = Except(ERROR, template, params, cause, trace)
-        sys.stderr.write(str(e))
+        str_e = unicode(e)
+
+        error_mode = cls.error_mode
+        try:
+            if not error_mode:
+                cls.error_mode = True
+                Log.note(str_e, {
+                    "error": {
+                        "template": template,
+                        "params": params,
+                        "cause": cause,
+                        "trace": trace
+                    }
+                })
+        except Exception, f:
+            pass
+        cls.error_mode = error_mode
+
+        sys.stderr.write(str_e)
 
 
     #RUN ME FIRST TO SETUP THE THREADED LOGGING
@@ -318,6 +346,15 @@ class Except(Exception):
             output += "\ncaused by\n\t" + "\nand caused by\n\t".join([c.__str__() for c in self.cause])
 
         return output + "\n"
+
+    def __json__(self):
+        return json_encoder.encode(Struct(
+            type = self.type,
+            template = self.template,
+            params = self.params,
+            cause = self.cause,
+            trace = self.trace
+        ))
 
 
 class BaseLog(object):

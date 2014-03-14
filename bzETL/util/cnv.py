@@ -40,8 +40,8 @@ class CNV:
             #REMOVE """COMMENTS""", #COMMENTS, //COMMENTS, AND \n \r
             if flexible:
                 #DERIVED FROM https://github.com/jeads/datasource/blob/master/datasource/bases/BaseHub.py#L58
-                json_string = re.sub(r"\"\"\".*?\"\"\"|\s+//.*\n|#.*?\n|\n|\r", r" ", json_string)
-
+                json_string = re.sub(r"\"\"\".*?\"\"\"|[ \t]+//.*\n|^//.*\n|#.*?\n", r"\n", json_string)
+                json_string = re.sub(r"\n//.*\n", r"\n\n", json_string)
             if params:
                 params = dict([(k, CNV.value2quote(v)) for k, v in params.items()])
                 json_string = expand_template(json_string, params)
