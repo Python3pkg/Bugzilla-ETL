@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 
 import json
 from math import floor
+
 import re
 import time
 from datetime import datetime, date, timedelta
@@ -18,7 +19,7 @@ from decimal import Decimal
 import sys
 
 from .collections import AND, MAX
-from .struct import Struct
+from .struct import Struct, StructList
 
 
 # THIS FILE EXISTS TO SERVE AS A FAST REPLACEMENT FOR JSON ENCODING
@@ -128,7 +129,7 @@ def _value2json(value, _buffer):
         return
 
     type = value.__class__
-    if type is dict:
+    if type in (dict, Struct):
         if value:
             _dict2json(value, _buffer)
         else:
@@ -153,7 +154,7 @@ def _value2json(value, _buffer):
         append(_buffer, unicode(value))
     elif type is float:
         append(_buffer, unicode(repr(value)))
-    elif type in (set, list, tuple):
+    elif type in (set, list, tuple, StructList):
         _list2json(value, _buffer)
     elif type is date:
         append(_buffer, unicode(long(time.mktime(value.timetuple()) * 1000)))
@@ -240,7 +241,7 @@ def _scrub(value):
         return unicode(value.total_seconds()) + "second"
     elif type is str:
         return unicode(value.decode("utf8"))
-    elif type is dict:
+    elif type in (dict, Struct):
         output = {}
         for k, v in value.iteritems():
             v = _scrub(v)
@@ -248,7 +249,7 @@ def _scrub(value):
         return output
     elif type is Decimal:
         return float(value)
-    elif type is list:
+    elif type in (list, StructList):
         output = []
         for v in value:
             v = _scrub(v)
@@ -337,7 +338,7 @@ def pretty_json(value):
 
             js = [pretty_json(v) for v in value]
             max_len = MAX(len(j) for j in js)
-            if max_len<=ARRAY_ITEM_MAX_LENGTH and AND(j.find("\n")==-1 for j in js):
+            if max_len <= ARRAY_ITEM_MAX_LENGTH and AND(j.find("\n") == -1 for j in js):
                 #ALL TINY VALUES
                 num_columns = max(1, min(ARRAY_MAX_COLUMNS, int(floor((ARRAY_ROW_LENGTH + 2.0)/float(max_len+2))))) # +2 TO COMPENSATE FOR COMMAS
                 if len(js)<=num_columns:  # DO NOT ADD \n IF ONLY ONE ROW

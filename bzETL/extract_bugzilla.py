@@ -501,6 +501,7 @@ def get_attachments(db, param):
             , ispatch AS 'attachments_ispatch'
             , isobsolete AS 'attachments_isobsolete'
             , isprivate AS 'attachments_isprivate'
+            , mimetype AS 'attachments_mimetype'
             , attach_id
         FROM
             attachments a

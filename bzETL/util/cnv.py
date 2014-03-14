@@ -13,7 +13,7 @@ import base64
 import datetime
 import re
 import time
-from bzETL.util import jsons
+from . import jsons
 from .collections.multiset import Multiset
 from .jsons import json_decoder, json_encoder, replace, ESCAPE
 from .env.logs import Log

@@ -179,41 +179,40 @@
                         "modified_ts": {
                             "type": "long"
                         },
-                        "attachments.ispatch": {
+                        "attachments\\.ispatch": {
                             "type": "boolean"
-                        },
-                        "attachments.isobsolete": {
-                            "type": "boolean"
-                        },
-                        "attachments.isprivate": {
-                            "type": "boolean"
-                        },
-                        "attachments_description": {
-                            "enabled": false,
-                            "type": "string"
-                        },
-                        "attachments_mimetype": {
-                            "enabled": false,
-                            "type": "string"
-                        },
-                        "attachments_filename": {
-                            "enabled": false,
-                            "type": "string"
                         },
                         "ispatch": {
+                            "type": "boolean"
+                        },
+                        "attachments\\.isobsolete": {
                             "type": "boolean"
                         },
                         "isobsolete": {
                             "type": "boolean"
                         },
+                        "attachments\\.isprivate": {
+                            "type": "boolean"
+                        },
                         "isprivate": {
                             "type": "boolean"
+                        },
+                        "attachments\\.mimetype": {
+                            "type": "boolean"
+                        },
+                        "mimetype": {
+                            "enabled": false,
+                            "type": "string"
+                        },
+                        "attachments\\.description": {
+                            "enabled": false,
+                            "type": "string"
                         },
                         "description": {
                             "enabled": false,
                             "type": "string"
                         },
-                        "mimetype": {
+                        "attachments\\.filename": {
                             "enabled": false,
                             "type": "string"
                         },

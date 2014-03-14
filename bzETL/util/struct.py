@@ -117,7 +117,7 @@ class Struct(dict):
             return wrap(output)
         except Exception:
             d = _get(self, "__dict__")
-            return _Null(d, key)
+            return NullType(d, key)
 
     def __setattr__(self, key, value):
         if isinstance(key, str):
@@ -177,10 +177,6 @@ class Struct(dict):
     @property
     def dict(self):
         return _get(self, "__dict__")
-
-    @property
-    def __class__(self):
-        return dict
 
     def copy(self):
         d = _get(self, "__dict__")
@@ -255,12 +251,12 @@ def _getdefault(obj, key):
     try:
         return obj[key]
     except Exception, e:
-        return _Null(obj, key)
+        return NullType(obj, key)
 
 def getdefaultwrapped(obj, key):
     o = obj.get(key, None)
     if o == None:
-        return _Null(obj, key)
+        return NullType(obj, key)
     return wrap(o)
 
 
@@ -270,7 +266,7 @@ def _assign(null, key, value, force=True):
     """
     d = _get(null, "__dict__")
     o = d["obj"]
-    if isinstance(o, _Null):
+    if isinstance(o, NullType):
         o = _assign(o, d["path"], {}, False)
     else:
         o = _setdefault(o, d["path"], {})
@@ -282,7 +278,7 @@ def _assign(null, key, value, force=True):
     return value
 
 
-class _Null(object):
+class NullType(object):
     """
     Structural Null provides closure under the dot (.) operator
         Null[x] == Null
@@ -337,13 +333,13 @@ class _Null(object):
         return False
 
     def __eq__(self, other):
-        return other is None or isinstance(other, _Null)
+        return other is None or isinstance(other, NullType)
 
     def __ne__(self, other):
-        return other is not None and not isinstance(other, _Null)
+        return other is not None and not isinstance(other, NullType)
 
     def __getitem__(self, key):
-        return _Null(self, key)
+        return NullType(self, key)
 
     def __len__(self):
         return 0
@@ -365,10 +361,10 @@ class _Null(object):
             output = _get(self, key)
             return output
         except Exception, e:
-            return _Null(self, key)
+            return NullType(self, key)
 
     def __setattr__(self, key, value):
-        _Null.__setitem__(self, key, value)
+        NullType.__setitem__(self, key, value)
 
     def __setitem__(self, key, value):
         try:
@@ -404,11 +400,8 @@ class _Null(object):
     def __repr__(self):
         return "Null"
 
-    def __class__(self):
-        return NoneType
 
-
-Null = _Null()
+Null = NullType()
 EmptyList = Null
 
 ZeroList = []
@@ -477,10 +470,6 @@ class StructList(list):
     def __len__(self):
         return _get(self, "list").__len__()
 
-    @property
-    def __class__(self):
-        return list
-
     def __getslice__(self, i, j):
         from .env.logs import Log
 
@@ -546,25 +535,25 @@ class StructList(list):
 
     def __getattribute__(self, key):
         try:
-            output = _get(self, key)
-            return output
+            if key != "index":
+                output = _get(self, key)
+                return output
         except Exception, e:
-            return StructList([v.get(key, None) for v in _get(self, "list")])
+            pass
+        return StructList([v.get(key, None) for v in _get(self, "list")])
 
 def wrap(v):
-    v_type = v.__class__
+    type = v.__class__
 
-    if v_type is dict:
-        if isinstance(v, Struct):
-            return v
+    if type is Struct:
+        return v
+    elif type is dict:
         m = Struct()
         object.__setattr__(m, "__dict__", v)  # INJECT m.__dict__=v SO THERE IS NO COPY
         return m
-
-    if v_type is list:
-        if isinstance(v, StructList):
-            return v
-
+    elif type is StructList:
+        return v
+    elif type is list:
         for vv in v:
             # IN PRACTICE WE DO NOT EXPECT TO GO THROUGH THIS LIST, IF ANY ARE WRAPPED, THE FIRST IS PROBABLY WRAPPED
             if vv is not unwrap(vv):
@@ -574,24 +563,21 @@ def wrap(v):
                 v.extend(temp)
                 return StructList(v)
         return StructList(v)
-
-    if v_type is NoneType:
-        if v is None:
-            return Null
-        return v
-
-    if v_type is GeneratorType:
+    elif type is GeneratorType:
         return (wrap(vv) for vv in v)
+    elif v is None:
+        return Null
 
     return v
 
 
 def unwrap(v):
-    if isinstance(v, Struct):
+    type = v.__class__
+    if type is Struct:
         return _get(v, "__dict__")
-    if isinstance(v, StructList):
+    if type is StructList:
         return v.list
-    if v == None:
+    if type is NullType:
         return None
     return v
 
