@@ -140,7 +140,7 @@ class TestETL(unittest.TestCase):
         self.settings.param.allow_private_bugs = True
 
         database.make_test_instance(self.settings.bugzilla)
-        es = elasticsearch.make_test_instance("candidate", self.settings.test_bugs)
+        es = elasticsearch.make_test_instance("candidate", self.settings.fake.bugs)
         es_comments = elasticsearch.make_test_instance("candidate_comments", self.settings.test_comments)
         bz_etl.main(self.settings, es, es_comments)
 
@@ -167,7 +167,7 @@ class TestETL(unittest.TestCase):
         self.settings.param.allow_private_bugs = Null
 
         database.make_test_instance(self.settings.bugzilla)
-        es = elasticsearch.make_test_instance("candidate", self.settings.test_bugs)
+        es = elasticsearch.make_test_instance("candidate", self.settings.fake.bugs)
         es_comments = elasticsearch.make_test_instance("candidate_comments", self.settings.test_comments)
         bz_etl.main(self.settings, es, es_comments)
 
@@ -200,8 +200,8 @@ class TestETL(unittest.TestCase):
             for b in private_bugs:
                 database.add_bug_group(db, b, BUG_GROUP_FOR_TESTING)
 
-        es = elasticsearch.make_test_instance("candidate", self.settings.test_bugs)
-        es_c = elasticsearch.make_test_instance("candidate_comments", self.settings.test_comments)
+        es = elasticsearch.make_test_instance("candidate", self.settings.real.bugs)
+        es_c = elasticsearch.make_test_instance("candidate_comments", self.settings.real.comments)
         bz_etl.main(self.settings, es, es_c)
 
         Thread.sleep(2)  # MUST SLEEP WHILE ES DOES ITS INDEXING
@@ -214,8 +214,8 @@ class TestETL(unittest.TestCase):
 
         database.make_test_instance(self.settings.bugzilla)
 
-        es = elasticsearch.make_test_instance("candidate", self.settings.test_bugs)
-        es_c = elasticsearch.make_test_instance("candidate_comments", self.settings.test_comments)
+        es = elasticsearch.make_test_instance("candidate", self.settings.real.bugs)
+        es_c = elasticsearch.make_test_instance("candidate_comments", self.settings.real.comments)
         bz_etl.main(self.settings, es, es_c)
 
         #MARK SOME STUFF PRIVATE
@@ -293,8 +293,8 @@ class TestETL(unittest.TestCase):
             for a in private_attachments:
                 database.mark_attachment_private(db, a.attach_id, isprivate=1)
 
-        es = elasticsearch.make_test_instance("candidate", self.settings.test_bugs)
-        es_c = elasticsearch.make_test_instance("candidate_comments", self.settings.test_comments)
+        es = elasticsearch.make_test_instance("candidate", self.settings.real.bugs)
+        es_c = elasticsearch.make_test_instance("candidate_comments", self.settings.real.comments)
         bz_etl.main(self.settings, es, es_c)
 
         Thread.sleep(2)  # MUST SLEEP WHILE ES DOES ITS INDEXING
@@ -322,8 +322,8 @@ class TestETL(unittest.TestCase):
             for c in private_comments:
                 database.mark_comment_private(db, c.comment_id, 1)
 
-        es = elasticsearch.make_test_instance("candidate", self.settings.test_bugs)
-        es_c = elasticsearch.make_test_instance("candidate_comments", self.settings.test_comments)
+        es = elasticsearch.make_test_instance("candidate", self.settings.real.bugs)
+        es_c = elasticsearch.make_test_instance("candidate_comments", self.settings.real.comments)
         bz_etl.main(self.settings, es, es_c)
 
         Thread.sleep(2)  # MUST SLEEP WHILE ES DOES ITS INDEXING
@@ -345,8 +345,8 @@ class TestETL(unittest.TestCase):
             for b in private_bugs:
                 database.add_bug_group(db, b, BUG_GROUP_FOR_TESTING)
 
-        es = elasticsearch.make_test_instance("candidate", self.settings.test_bugs)
-        es_c = elasticsearch.make_test_instance("candidate_comments", self.settings.test_comments)
+        es = elasticsearch.make_test_instance("candidate", self.settings.real.bugs)
+        es_c = elasticsearch.make_test_instance("candidate_comments", self.settings.real.comments)
         bz_etl.main(self.settings, es, es_c)
 
         # MAKE A CHANGE TO THE PRIVATE BUGS
