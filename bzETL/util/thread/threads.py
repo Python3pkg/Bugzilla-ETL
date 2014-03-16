@@ -287,7 +287,7 @@ class Thread(object):
                 if DEBUG:
                     from ..env.logs import Log
 
-                    Log.note("Waiting on thread {{thread}}", {"thread": self.name})
+                    Log.note("Waiting on thread {{thread|quote}}", {"thread": self.name})
         else:
             self.stopped.wait_for_go(till=till)
             if self.stopped:

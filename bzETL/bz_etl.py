@@ -11,7 +11,7 @@
 # REPLACES THE KETTLE FLOW CONTROL PROGRAM, AND BASH SCRIPT
 
 
-import gc
+
 from bzETL.util.maths import Math
 from bzETL.util import struct, jsons
 from bzETL.util.env.logs import Log

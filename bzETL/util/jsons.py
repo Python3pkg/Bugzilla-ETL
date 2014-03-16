@@ -73,7 +73,7 @@ class PyPyJSONEncoder(object):
         except Exception, e:
             #THE PRETTY JSON WILL PROVIDE MORE DETAIL ABOUT THE SERIALIZATION CONCERNS
             from .env.logs import Log
-
+            Log.warning("Serialization of JSON problems", e)
             try:
                 pretty_json(value)
             except Exception, f:
@@ -167,7 +167,8 @@ def _value2json(value, _buffer):
     elif hasattr(value, '__iter__'):
         _iter2json(value, _buffer)
     elif hasattr(value, '__json__'):
-        append(value.__json__(), _buffer)
+        j = value.__json__()
+        append(_buffer, j)
     else:
         raise Exception(repr(value) + " is not JSON serializable")
 
@@ -356,7 +357,7 @@ def pretty_json(value):
         elif hasattr(value, '__json__'):
             j = value.__json__()
             if j == None:
-                return "null"  # TODO: FIND OUT WHAT CAUSES THIS
+                return "   null   "  # TODO: FIND OUT WHAT CAUSES THIS
             return pretty_json(json_decoder.decode(j))
         elif hasattr(value, '__iter__'):
             return pretty_json(list(value))

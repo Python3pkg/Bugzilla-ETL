@@ -59,7 +59,10 @@ class Struct(dict):
         return True if d else False
 
     def __str__(self):
-        return dict.__str__(_get(self, "__dict__"))
+        try:
+            return dict.__str__(_get(self, "__dict__"))
+        except Exception, e:
+            return "{}"
 
     def __getitem__(self, key):
         if isinstance(key, str):
@@ -215,6 +218,23 @@ class Struct(dict):
 
 # KEEP TRACK OF WHAT ATTRIBUTES ARE REQUESTED, MAYBE SOME (BUILTIN) ARE STILL USEFUL
 requested = set()
+
+
+def _str(value, depth):
+    """
+    FOR DEBUGGING POSSIBLY RECURSIVE STRUCTURES
+    """
+    output = []
+    if depth >0 and isinstance(value, dict):
+        for k, v in value.items():
+            output.append(str(k) + "=" + _str(v, depth - 1))
+        return "{" + ",\n".join(output) + "}"
+    elif depth >0 and isinstance(value, list):
+        for v in value:
+            output.append(_str(v, depth-1))
+        return "[" + ",\n".join(output) + "]"
+    else:
+        return str(type(value))
 
 
 def _setdefault(obj, key, value):
@@ -687,4 +707,17 @@ def hash_value(v):
         return hash(tuple(sorted(hash_value(vv) for vv in v.values())))
 
 
+
+def deeper_than(depth):
+    """
+    RETURN TRUE IF DEEPER THAN depth
+    """
+    import sys
+
+    while True:
+        try:
+            sys._getframe(depth)
+            return True
+        except ValueError:
+            return False
 

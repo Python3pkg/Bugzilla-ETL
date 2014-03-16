@@ -44,6 +44,10 @@ def newline(value):
     return "\n" + toString(value).lstrip("\n")
 
 
+def quote(value):
+    return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
+
 def indent(value, prefix=u"\t", indent=None):
     if indent != None:
         prefix = prefix * indent
@@ -143,7 +147,7 @@ def _expand(template, seq):
     elif isinstance(template, list):
         return "".join(_expand(t, seq) for t in template)
     else:
-        from ...env.logs import Log
+        from .env.logs import Log
 
         Log.error("can not handle")
 
