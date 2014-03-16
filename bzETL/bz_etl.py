@@ -363,7 +363,7 @@ def main(settings, es=None, es_comments=None):
         with DB(settings.bugzilla, readonly=True) as db:
             current_run_time, es, es_comments, last_run_time = setup_es(settings, db, es, es_comments)
 
-            with ThreadedQueue(es, size=1000) as output_queue:
+            with ThreadedQueue(es, size=1000, silent=True) as output_queue:
                 #SETUP RUN PARAMETERS
                 param = Struct()
                 param.end_time = CNV.datetime2milli(get_current_time(db))

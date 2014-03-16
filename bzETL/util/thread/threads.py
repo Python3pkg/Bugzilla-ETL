@@ -59,6 +59,7 @@ class Queue(object):
     def __init__(self, max=None, silent=False):
         """
         max - LIMIT THE NUMBER IN THE QUEUE, IF TOO MANY add() AND extend() WILL BLOCK
+        silent - COMPLAIN IF THE READERS ARE TOO SLOW
         """
         self.max = nvl(max, 2 ** 10)
         self.silent = silent
@@ -391,12 +392,12 @@ class ThreadedQueue(Queue):
     DISPATCH TO ANOTHER (SLOWER) queue IN BATCHES OF GIVEN size
     """
 
-    def __init__(self, queue, size=None, max=None, period=None):
+    def __init__(self, queue, size=None, max=None, period=None, silent=False):
         if max == None:
             #REASONABLE DEFAULT
             max = size * 2
 
-        Queue.__init__(self, max=max)
+        Queue.__init__(self, max=max, silent=silent)
 
         def size_pusher(please_stop):
             please_stop.on_go(lambda: self.add(Thread.STOP))
