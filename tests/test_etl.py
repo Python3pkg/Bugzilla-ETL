@@ -141,14 +141,14 @@ class TestETL(unittest.TestCase):
 
         database.make_test_instance(self.settings.bugzilla)
         es = elasticsearch.make_test_instance("candidate", self.settings.fake.bugs)
-        es_comments = elasticsearch.make_test_instance("candidate_comments", self.settings.test_comments)
+        es_comments = elasticsearch.make_test_instance("candidate_comments", self.settings.fake.comments)
         bz_etl.main(self.settings, es, es_comments)
 
         ref = elasticsearch.open_test_instance("reference", self.settings.private_bugs_reference)
         compare_both(es, ref, self.settings, self.settings.param.bugs)
 
         #DIRECT COMPARE THE FILE JSON
-        can = File(self.settings.test_comments.filename).read()
+        can = File(self.settings.fake.comments.filename).read()
         ref = File(self.settings.private_comments_reference.filename).read()
         if can != ref:
             for i, c in enumerate(can):
@@ -168,14 +168,14 @@ class TestETL(unittest.TestCase):
 
         database.make_test_instance(self.settings.bugzilla)
         es = elasticsearch.make_test_instance("candidate", self.settings.fake.bugs)
-        es_comments = elasticsearch.make_test_instance("candidate_comments", self.settings.test_comments)
+        es_comments = elasticsearch.make_test_instance("candidate_comments", self.settings.fake.comments)
         bz_etl.main(self.settings, es, es_comments)
 
         ref = elasticsearch.open_test_instance("reference", self.settings.public_bugs_reference)
         compare_both(es, ref, self.settings, self.settings.param.bugs)
 
         #DIRECT COMPARE THE FILE JSON
-        can = File(self.settings.test_comments.filename).read()
+        can = File(self.settings.fake.comments.filename).read()
         ref = File(self.settings.public_comments_reference.filename).read()
         if can != ref:
             found = -1
