@@ -137,8 +137,8 @@ def setup_es(settings, db, es, es_comments):
             current_run_time = long(File(settings.param.first_run_time).read())
             if not es:
                 if not settings.es.alias:
+                    temp = ElasticSearch(settings.es).get_proto(settings.es.index)
                     settings.es.alias = settings.es.index
-                    temp = ElasticSearch(settings.es).get_proto(settings.es.alias)
                     settings.es.index = temp[-1]
                 es = ElasticSearch(settings.es)
                 es.set_refresh_interval(1)
