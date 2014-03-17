@@ -273,7 +273,7 @@ class ElasticSearch(object):
         else:
             interval = unicode(seconds) + "s"
 
-        response = ElasticSearch.put(
+        response = self.put(
             self.settings.host + ":" + unicode(
                 self.settings.port) + "/" + self.settings.index + "/_settings",
             data="{\"index.refresh_interval\":\"" + interval + "\"}"
