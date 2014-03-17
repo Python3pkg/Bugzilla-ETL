@@ -62,8 +62,9 @@ def etl_comments(db, es, param, please_stop):
         Log.note("Read comments from database")
         comments = get_comments(comment_db_cache[0], param)
 
-    with Timer("Write {{num}} comments to ElasticSearch", {"num": len(comments)}):
-        es.extend({"id": c.comment_id, "value": c} for c in comments)
+    for g, c in Q.groupby(comments, size=500):
+        with Timer("Write {{num}} comments to ElasticSearch", {"num": len(c)}):
+            es.extend({"id": cc.comment_id, "value": cc} for cc in c)
 
 
 def etl(db, output_queue, param, please_stop):
