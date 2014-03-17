@@ -139,13 +139,14 @@ def setup_es(settings, db, es, es_comments):
                 if not settings.es.alias:
                     temp = ElasticSearch(settings.es).get_proto(settings.es.index)
                     settings.es.alias = settings.es.index
-                    settings.es.index = temp[-1]
+                    settings.es.index = temp.last()
                 es = ElasticSearch(settings.es)
-                es.set_refresh_interval(1)
+                es.set_refresh_interval(1)  #REQUIRED SO WE CAN SEE WHAT BUGS HAVE BEEN LOADED ALREADY
 
                 if not settings.es_comments.alias:
+                    temp = ElasticSearch(settings.es_comments).get_proto(settings.es_comments.index)
                     settings.es_comments.alias = settings.es_comments.index
-                    settings.es_comments.index = ElasticSearch(settings.es_comments).get_proto(settings.es_comments.alias)[-1]
+                    settings.es_comments.index = temp.last()
                 es_comments = ElasticSearch(settings.es_comments)
         except Exception, e:
             Log.warning("can not resume ETL, restarting", e)
